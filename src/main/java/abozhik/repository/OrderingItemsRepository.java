@@ -3,6 +3,7 @@ package abozhik.repository;
 import abozhik.DbConnection;
 import abozhik.model.OrderingItem;
 import abozhik.util.JdbcUtils;
+import lombok.SneakyThrows;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,8 +11,10 @@ import java.sql.SQLException;
 
 public class OrderingItemsRepository {
 
+    @SneakyThrows
     public Long saveOrderingItem(OrderingItem orderingItem) {
-        try (Connection connection = DbConnection.getConnection()) {
+        Connection connection = DbConnection.getConnection();
+        try {
             connection.setAutoCommit(false);
             PreparedStatement ps = connection.prepareStatement(
                     "INSERT INTO ordering_items (ordering_id, item_name, item_count, item_price) VALUES (?, ?, ?, ?) RETURNING id");
@@ -27,6 +30,7 @@ public class OrderingItemsRepository {
             return JdbcUtils.getInsertedId(ps);
         } catch (SQLException e) {
             e.printStackTrace();
+            connection.rollback();
         }
         return null;
     }
